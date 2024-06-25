@@ -41,17 +41,16 @@ app.get('/initials2/:name', async (req, res) => {
     const imageBuffer = Buffer.from(svgImage);
 
     try {
-      const pngImage = await sharp(imageBuffer)
-        .png()
-        .toBuffer();
-  
-      const base64Image = `data:image/png;base64,${pngImage.toString('base64')}`;
-  
-      res.status(200).json({ message: 'Image generated and stored successfully', base64Image });
-    } catch (error) {
-      res.status(500).send('Error generating or storing image');
-    }
+        const pngImage = await sharp(imageBuffer)
+            .png()
+            .toBuffer();
 
+        res.set('Content-Type', 'image/png');
+        res.send(pngImage);
+    } catch (error) {
+        console.log({error})
+        res.status(500).send({m:'Error generating image', error});
+    }
 });
 
 app.listen(port, () => {
