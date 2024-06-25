@@ -1,5 +1,6 @@
 const express = require('express');
 const { createCanvas } = require('canvas');
+const sharp = require('sharp');
 
 const app = express();
 const port = 3000;
@@ -24,6 +25,33 @@ app.get('/initials/:name', (req, res) => {
     const buffer = canvas.toBuffer('image/png');
     res.set('Content-Type', 'image/png');
     res.send(buffer);
+});
+
+app.get('/initials2/:name', async (req, res) => {
+    const { name } = req.params;
+    const initials = name.split(' ').map(word => word[0]).join('').toUpperCase();
+
+    const svgImage = `
+      <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#FFFFFF"/>
+        <text x="50%" y="50%" font-size="100" text-anchor="middle" fill="#000000" dy=".3em">${initials}</text>
+      </svg>
+    `;
+
+    const imageBuffer = Buffer.from(svgImage);
+
+    try {
+      const pngImage = await sharp(imageBuffer)
+        .png()
+        .toBuffer();
+  
+      const base64Image = `data:image/png;base64,${pngImage.toString('base64')}`;
+  
+      res.status(200).json({ message: 'Image generated and stored successfully', base64Image });
+    } catch (error) {
+      res.status(500).send('Error generating or storing image');
+    }
+
 });
 
 app.listen(port, () => {
